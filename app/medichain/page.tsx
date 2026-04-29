@@ -61,6 +61,14 @@ const roleOptions: DemoRole[] = [
   "developerDemo"
 ];
 
+const roleLogicItems: Array<{ key: "patient" | "doctor" | "hospital" | "regulator" | "developer"; role: DemoRole }> = [
+  { key: "patient", role: "patientWalletDemo" },
+  { key: "doctor", role: "doctorPortal" },
+  { key: "hospital", role: "hospitalAdmin" },
+  { key: "regulator", role: "regulator" },
+  { key: "developer", role: "developerDemo" }
+];
+
 const initialRecords: MedicalRecord[] = [
   {
     id: "rec-blood",
@@ -617,11 +625,11 @@ export default function MediChainPage() {
   };
 
   const technologyStack = [
-    { title: "Hyperledger Fabric", description: t("mc_tech_hyperledger_desc") },
-    { title: "IPFS + AES-256", description: t("mc_tech_ipfs_desc") },
-    { title: "Smart Contract / Chaincode", description: t("mc_tech_chaincode_desc") },
-    { title: "DID Wallet", description: t("mc_tech_did_desc") },
-    { title: "On-chain Audit", description: t("mc_tech_audit_desc") }
+    { title: t("techHospitalConsortiumLedger"), subtitle: t("techHospitalConsortiumLedgerSubtitle"), description: t("mc_tech_hyperledger_desc") },
+    { title: t("techOffchainEncryptedStorage"), subtitle: t("techOffchainEncryptedStorageSubtitle"), description: t("mc_tech_ipfs_desc") },
+    { title: t("techSmartContractChaincode"), subtitle: t("techSmartContractChaincodeSubtitle"), description: t("mc_tech_chaincode_desc") },
+    { title: t("techPatientDidWallet"), subtitle: t("techPatientDidWalletSubtitle"), description: t("mc_tech_did_desc") },
+    { title: t("techOnchainAudit"), subtitle: t("techOnchainAuditSubtitle"), description: t("mc_tech_audit_desc") }
   ];
 
   const chainItems = [
@@ -640,9 +648,40 @@ export default function MediChainPage() {
     t("mc_offchain_full_documents")
   ];
 
+  const proofChips = ["AES-256", "IPFS", "Fabric"];
+
+  const renderRecordActions = (record: MedicalRecord) => {
+    const actions = getRoleActions(record);
+
+    return (
+      <details className="group">
+        <summary className="glass-button flex min-h-9 cursor-pointer list-none justify-center gap-2 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-sky-300 [&::-webkit-details-marker]:hidden">
+          <SlidersHorizontal className="h-3.5 w-3.5" />
+          {t("actions")}
+        </summary>
+        <div className="mt-2 grid gap-1.5 rounded-xl border border-slate-200 bg-white p-2 shadow-sm">
+          {actions.map((action) => {
+            const Icon = action.icon;
+            return (
+              <button
+                key={action.key}
+                type="button"
+                onClick={action.onClick}
+                className="flex min-h-8 w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-xs font-medium text-slate-600 transition hover:bg-sky-50 hover:text-sky-700"
+              >
+                <Icon className="h-3.5 w-3.5 shrink-0" />
+                <span>{action.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </details>
+    );
+  };
+
   return (
-    <div className="min-h-[calc(100vh-4rem)] px-5 pb-16 pt-6 sm:px-8 lg:pl-80 lg:pr-8">
-      <div className="mx-auto max-w-7xl">
+    <div className="min-h-[calc(100vh-4rem)] overflow-x-hidden px-5 pb-16 pt-6 sm:px-8 lg:ml-72 lg:px-8 xl:px-10">
+      <div className="mr-auto w-full max-w-[1360px]">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -654,21 +693,31 @@ export default function MediChainPage() {
         </motion.div>
 
         <section className="glass-card mb-6 rounded-2xl border-sky-100 bg-gradient-to-r from-sky-50/80 via-white to-emerald-50/80 p-5">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-            <div className="grid gap-3 text-sm text-slate-600 sm:grid-cols-3 lg:flex-1">
+          <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(22rem,0.48fr)] xl:items-stretch">
+            <div className="grid gap-3 text-sm text-slate-600 sm:grid-cols-3">
               <InfoRow label={t("mc_current_role")} value={t(`mc_role_${currentRole}`)} tone="blue" />
-              <InfoRow label={t("mc_demo_patient")} value={showChinese ? "陈女士" : "Ms. Chen"} />
+              <InfoRow label={t("mc_demo_patient")} value={t("mc_demo_patient_value")} />
               <InfoRow label="DID" value="did:medlink:patient:CN-2038-8841" />
             </div>
-            <div className="w-full lg:w-72">
-              <label className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500" htmlFor="role-switcher">
+            <div
+              className="group relative rounded-2xl border-2 border-sky-200 bg-gradient-to-br from-white via-sky-50 to-emerald-50 p-4 shadow-sm"
+              title={t("roleSwitchTooltip")}
+            >
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <span className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-white px-3 py-1 text-xs font-semibold text-sky-700 shadow-sm">
+                  <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
+                  {t("roleSwitchHintBadge")}
+                </span>
+                <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700">{t("roleSwitchStepBadge")}</span>
+              </div>
+              <label className="mt-4 block text-xs font-semibold uppercase tracking-[0.14em] text-slate-500" htmlFor="role-switcher">
                 {t("mc_demo_role")}
               </label>
               <select
                 id="role-switcher"
                 value={currentRole}
                 onChange={(event) => setCurrentRole(event.target.value as DemoRole)}
-                className="mt-2 h-12 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
+                className="mt-2 h-12 w-full rounded-xl border-2 border-sky-300 bg-white px-3 text-sm font-semibold text-slate-700 shadow-[0_0_0_4px_rgba(14,165,233,0.08)] outline-none transition hover:border-emerald-300 focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100"
               >
                 {roleOptions.map((role) => (
                   <option key={role} value={role}>
@@ -676,15 +725,29 @@ export default function MediChainPage() {
                   </option>
                 ))}
               </select>
+              <p className="mt-3 text-sm leading-6 text-slate-600">{t("roleSwitchHintText")}</p>
+              <div className="pointer-events-none absolute right-4 top-full z-20 mt-2 hidden max-w-xs rounded-xl border border-slate-200 bg-slate-900 px-3 py-2 text-xs leading-5 text-white shadow-xl group-hover:block">
+                {t("roleSwitchTooltip")}
+              </div>
             </div>
           </div>
-          <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm leading-6 text-emerald-800">
-            {t("mc_demo_mode_note")}
+          <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(22rem,0.48fr)]">
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm leading-6 text-emerald-800">
+              {t("mc_demo_mode_note")}
+            </div>
+            <div className="rounded-xl border border-sky-200 bg-white/80 px-4 py-3 text-sm text-slate-600">
+              <p className="font-semibold text-slate-900">{t("demoInteractionTitle")}</p>
+              <ol className="mt-2 grid gap-1 leading-6">
+                <li>1. {t("demoInteractionStep1")}</li>
+                <li>2. {t("demoInteractionStep2")}</li>
+                <li>3. {t("demoInteractionStep3")}</li>
+              </ol>
+            </div>
           </div>
         </section>
 
-        <div className="grid gap-6 xl:grid-cols-[minmax(20rem,0.42fr)_minmax(0,1fr)]">
-          <div className="grid min-w-0 content-start gap-6">
+        <div className="grid min-w-0 gap-6">
+          <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(19rem,0.36fr)_minmax(0,1fr)]">
             <section className="glass-card rounded-2xl p-5">
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
@@ -702,6 +765,70 @@ export default function MediChainPage() {
               </div>
             </section>
 
+            <section className="glass-card rounded-2xl p-5">
+              <h2 className="text-lg font-semibold text-slate-900">{t("mc_technology_stack_title")}</h2>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2 2xl:grid-cols-5">
+                {technologyStack.map((item) => (
+                  <div key={item.title} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                    <div className="flex min-w-0 flex-wrap items-center gap-2">
+                      <p className="text-sm font-semibold text-slate-900">{item.title}</p>
+                      <span className="rounded-full border border-sky-200 bg-white px-2 py-0.5 text-[11px] font-medium text-sky-700">{item.subtitle}</span>
+                    </div>
+                    <p className="mt-2 text-xs leading-6 text-slate-500">{item.description}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+          </div>
+
+          <section className="glass-card rounded-2xl p-5">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-slate-900">{t("rolePermissionTitle")}</h2>
+                <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">{t("rolePermissionSubtitle")}</p>
+              </div>
+            </div>
+            <div className="mt-4 grid gap-3 md:grid-cols-2 2xl:grid-cols-5">
+              {roleLogicItems.map((item) => {
+                const active = item.role === currentRole;
+                return (
+                  <div
+                    key={item.key}
+                    className={`rounded-2xl border p-4 transition ${
+                      active ? "border-sky-300 bg-gradient-to-br from-sky-50 to-emerald-50 shadow-sm" : "border-slate-200 bg-slate-50"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <p className="text-sm font-semibold text-slate-900">{t(`${item.key}RoleCardTitle`)}</p>
+                      {active ? (
+                        <span className="shrink-0 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
+                          {t("activeRole")}
+                        </span>
+                      ) : null}
+                    </div>
+                    <p className="mt-3 text-xs leading-6 text-slate-600">{t(`${item.key}RoleCan`)}</p>
+                    <p className="mt-2 text-xs leading-6 text-slate-500">{t(`${item.key}RoleCannot`)}</p>
+                  </div>
+                );
+              })}
+            </div>
+            <p className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm leading-6 text-emerald-800">
+              {t("mc_role_logic_note")}
+            </p>
+          </section>
+
+          <section className="glass-card rounded-2xl p-5">
+            <h2 className="text-lg font-semibold text-slate-900">{t("mc_boundary_title")}</h2>
+            <div className="mt-4 grid gap-4 md:grid-cols-2">
+              <BoundaryList title={t("mc_on_chain")} items={chainItems} tone="sky" />
+              <BoundaryList title={t("mc_off_chain")} items={offChainItems} tone="emerald" />
+            </div>
+            <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-800">
+              {t("mc_boundary_note")}
+            </div>
+          </section>
+
+          <div className="grid min-w-0 gap-6 xl:grid-cols-[300px_minmax(0,1fr)]">
             <section className="glass-card overflow-hidden rounded-2xl p-5">
               <h2 className="text-lg font-semibold text-slate-900">{t("encryption_status")}</h2>
               <div className="mt-6 flex flex-col items-center gap-4 rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
@@ -733,94 +860,138 @@ export default function MediChainPage() {
                 </div>
               </div>
             </section>
-          </div>
 
-          <div className="grid min-w-0 gap-6">
-            <section className="glass-card rounded-2xl p-5">
-              <h2 className="text-lg font-semibold text-slate-900">{t("mc_technology_stack_title")}</h2>
-              <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-                {technologyStack.map((item) => (
-                  <div key={item.title} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                    <p className="text-sm font-semibold text-slate-900">{item.title}</p>
-                    <p className="mt-2 text-xs leading-6 text-slate-500">{item.description}</p>
-                  </div>
-                ))}
-              </div>
-            </section>
+            <div className="grid min-w-0 gap-6">
+              {currentRole === "developerDemo" ? (
+                <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-800">
+                  {t("mc_developer_demo_note")}
+                </div>
+              ) : null}
+              <section className="glass-card min-w-0 overflow-hidden rounded-2xl p-5">
+                <h2 className="text-lg font-semibold text-slate-900">{t("medical_records")}</h2>
+                <div className="mt-5 hidden max-w-full overflow-x-auto rounded-2xl border border-slate-200 lg:block">
+                  <table className="w-full min-w-[1040px] table-fixed border-collapse text-left">
+                    <colgroup>
+                      <col className="w-[8%]" />
+                      <col className="w-[14%]" />
+                      <col className="w-[8%]" />
+                      <col className="w-[11%]" />
+                      <col className="w-[12%]" />
+                      <col className="w-[13%]" />
+                      <col className="w-[10%]" />
+                      <col className="w-[8%]" />
+                      <col className="w-[9.5rem]" />
+                    </colgroup>
+                    <thead className="bg-slate-50 text-xs uppercase tracking-[0.12em] text-slate-500">
+                      <tr>
+                        <th className="px-3 py-4 font-medium">{t("type")}</th>
+                        <th className="px-3 py-4 font-medium">{t("hospital")}</th>
+                        <th className="px-3 py-4 font-medium">{t("date")}</th>
+                        <th className="px-3 py-4 font-medium">{t("mc_proof")}</th>
+                        <th className="px-3 py-4 font-medium">{t("consent_status")}</th>
+                        <th className="px-3 py-4 font-medium">{t("mc_authorized_to")}</th>
+                        <th className="px-3 py-4 font-medium">{t("mc_purpose")}</th>
+                        <th className="px-3 py-4 font-medium">{t("mc_expiry")}</th>
+                        <th className="sticky right-0 z-20 bg-slate-50 px-3 py-4 font-medium shadow-[-8px_0_12px_rgba(15,23,42,0.06)]">
+                          {t("mc_patient_consent_actions")}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {records.map((record) => {
+                        const hospitalName = displayHospitalName(record.hospital, showChinese, showKorean);
+                        const providerName = displayProviderName(record.authorizedTo, showChinese, showKorean, t);
 
-            <section className="glass-card rounded-2xl p-5">
-              <h2 className="text-lg font-semibold text-slate-900">{t("mc_boundary_title")}</h2>
-              <div className="mt-4 grid gap-4 md:grid-cols-2">
-                <BoundaryList title={t("mc_on_chain")} items={chainItems} tone="sky" />
-                <BoundaryList title={t("mc_off_chain")} items={offChainItems} tone="emerald" />
-              </div>
-              <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-800">
-                {t("mc_boundary_note")}
-              </div>
-            </section>
+                        return (
+                          <tr key={record.id} className="border-t border-slate-200 text-sm text-slate-600">
+                            <td className="px-3 py-4 align-top font-medium text-slate-900">
+                              <span className="line-clamp-2">{displayRecordType(record.type, showChinese, showKorean)}</span>
+                            </td>
+                            <td className="px-3 py-4 align-top leading-6" title={hospitalName}>
+                              <span className="line-clamp-2">{hospitalName}</span>
+                            </td>
+                            <td className="whitespace-nowrap px-3 py-4 align-top">{record.date}</td>
+                            <td className="px-3 py-4 align-top">
+                              <div className="flex flex-wrap gap-1.5">
+                                {proofChips.map((chip) => (
+                                  <button
+                                    key={`${record.id}-${chip}`}
+                                    type="button"
+                                    onClick={() => setTraceRecord(record)}
+                                    className="rounded-full border border-sky-200 bg-sky-50 px-2 py-0.5 text-[11px] font-semibold text-sky-700 transition hover:border-sky-300 hover:bg-white"
+                                  >
+                                    {chip}
+                                  </button>
+                                ))}
+                              </div>
+                            </td>
+                            <td className="px-3 py-4 align-top">
+                              <span className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-medium ${statusClass(record.consentStatus)}`}>
+                                {displayConsentStatus(record.consentStatus, t)}
+                              </span>
+                            </td>
+                            <td className="px-3 py-4 align-top leading-6" title={providerName}>
+                              <span className="line-clamp-2">{providerName}</span>
+                            </td>
+                            <td className="px-3 py-4 align-top">
+                              <span className="inline-flex max-w-full rounded-full border border-sky-200 bg-white px-2.5 py-1 text-xs font-medium text-sky-700">
+                                <span className="truncate">{t(record.purposeKey)}</span>
+                              </span>
+                            </td>
+                            <td className="whitespace-nowrap px-3 py-4 align-top">{t(record.expiryKey)}</td>
+                            <td className="sticky right-0 z-10 bg-white px-3 py-4 align-top shadow-[-8px_0_12px_rgba(15,23,42,0.06)]">
+                              {renderRecordActions(record)}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
 
-            <section className="glass-card rounded-2xl p-5">
-              <h2 className="text-lg font-semibold text-slate-900">{t("medical_records")}</h2>
-              <div className="mt-5 max-w-full overflow-x-auto rounded-2xl border border-slate-200">
-                <table className="w-full min-w-[1720px] border-collapse text-left">
-                  <thead className="bg-slate-50 text-xs uppercase tracking-[0.14em] text-slate-500">
-                    <tr>
-                      <th className="w-32 whitespace-nowrap px-4 py-4 font-medium">{t("type")}</th>
-                      <th className="w-52 whitespace-nowrap px-4 py-4 font-medium">{t("hospital")}</th>
-                      <th className="w-32 whitespace-nowrap px-4 py-4 font-medium">{t("date")}</th>
-                      <th className="w-28 whitespace-nowrap px-4 py-4 font-medium">{t("encryption")}</th>
-                      <th className="w-64 whitespace-nowrap px-4 py-4 font-medium">IPFS CID</th>
-                      <th className="w-44 whitespace-nowrap px-4 py-4 font-medium">{t("mc_on_chain_hash")}</th>
-                      <th className="w-36 whitespace-nowrap px-4 py-4 font-medium">{t("consent_status")}</th>
-                      <th className="w-56 whitespace-nowrap px-4 py-4 font-medium">{t("mc_authorized_to")}</th>
-                      <th className="w-44 whitespace-nowrap px-4 py-4 font-medium">{t("mc_purpose")}</th>
-                      <th className="w-36 whitespace-nowrap px-4 py-4 font-medium">{t("mc_expiry")}</th>
-                      <th className="w-56 whitespace-nowrap px-4 py-4 font-medium">{t("mc_requesting_institution")}</th>
-                      <th className="min-w-[260px] px-4 py-4 font-medium">{t("mc_patient_consent_actions")}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {records.map((record) => (
-                      <tr key={record.id} className="border-t border-slate-200 text-sm text-slate-600">
-                        <td className="px-4 py-4 font-medium text-slate-900">{displayRecordType(record.type, showChinese, showKorean)}</td>
-                        <td className="px-4 py-4 leading-6">{displayHospitalName(record.hospital, showChinese, showKorean)}</td>
-                        <td className="whitespace-nowrap px-4 py-4">{record.date}</td>
-                        <td className="whitespace-nowrap px-4 py-4">{record.encryption}</td>
-                        <td className="whitespace-nowrap px-4 py-4 font-mono text-xs">{record.ipfsCid}</td>
-                        <td className="whitespace-nowrap px-4 py-4 font-mono text-xs">{compactHash(record.hash)}</td>
-                        <td className="whitespace-nowrap px-4 py-4">
-                          <span className={`inline-flex whitespace-nowrap rounded-full border px-2.5 py-1 text-xs font-medium ${statusClass(record.consentStatus)}`}>
+                <div className="mt-5 grid gap-3 lg:hidden">
+                  {records.map((record) => {
+                    const hospitalName = displayHospitalName(record.hospital, showChinese, showKorean);
+                    const providerName = displayProviderName(record.authorizedTo, showChinese, showKorean, t);
+
+                    return (
+                      <article key={record.id} className="rounded-2xl border border-slate-200 bg-white p-4">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                          <div className="min-w-0">
+                            <p className="font-semibold text-slate-900">{displayRecordType(record.type, showChinese, showKorean)}</p>
+                            <p className="mt-1 line-clamp-2 text-sm leading-6 text-slate-500" title={hospitalName}>{hospitalName}</p>
+                            <p className="mt-1 text-xs text-slate-400">{record.date}</p>
+                          </div>
+                          <span className={`inline-flex w-fit rounded-full border px-2.5 py-1 text-xs font-medium ${statusClass(record.consentStatus)}`}>
                             {displayConsentStatus(record.consentStatus, t)}
                           </span>
-                        </td>
-                        <td className="px-4 py-4 leading-6">{displayProviderName(record.authorizedTo, showChinese, showKorean, t)}</td>
-                        <td className="px-4 py-4 leading-6">{t(record.purposeKey)}</td>
-                        <td className="whitespace-nowrap px-4 py-4">{t(record.expiryKey)}</td>
-                        <td className="px-4 py-4 leading-6">{record.requestingInstitution ? displayHospitalName(record.requestingInstitution, showChinese, showKorean) : t("mc_no_active_request")}</td>
-                        <td className="px-4 py-4">
-                          <div className="flex min-w-[240px] flex-wrap gap-2">
-                            {getRoleActions(record).map((action) => {
-                              const Icon = action.icon;
-                              return (
+                        </div>
+                        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                          <InfoRow label={t("mc_authorized_to")} value={providerName} />
+                          <InfoRow label={t("mc_purpose")} value={t(record.purposeKey)} tone="blue" />
+                          <InfoRow label={t("mc_expiry")} value={t(record.expiryKey)} />
+                          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                            <p className="text-xs uppercase tracking-[0.14em] text-slate-500">{t("mc_proof")}</p>
+                            <div className="mt-2 flex flex-wrap gap-1.5">
+                              {proofChips.map((chip) => (
                                 <button
-                                  key={action.key}
+                                  key={`${record.id}-mobile-${chip}`}
                                   type="button"
-                                  onClick={action.onClick}
-                                  className="glass-button min-h-9 justify-center whitespace-nowrap px-3 py-1.5 text-xs"
+                                  onClick={() => setTraceRecord(record)}
+                                  className="rounded-full border border-sky-200 bg-white px-2 py-0.5 text-[11px] font-semibold text-sky-700"
                                 >
-                                  <Icon className="h-3.5 w-3.5" />
-                                  {action.label}
+                                  {chip}
                                 </button>
-                              );
-                            })}
+                              ))}
+                            </div>
                           </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </section>
+                        </div>
+                        <div className="mt-4">{renderRecordActions(record)}</div>
+                      </article>
+                    );
+                  })}
+                </div>
+              </section>
 
             <section className="glass-card rounded-2xl p-5">
               <h2 className="text-lg font-semibold text-slate-900">{t("recent_access_events")}</h2>
@@ -840,21 +1011,7 @@ export default function MediChainPage() {
                 ))}
               </div>
             </section>
-
-            <section className="glass-card rounded-2xl p-5">
-              <h2 className="text-lg font-semibold text-slate-900">{t("mc_role_logic_title")}</h2>
-              <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-                {["patient", "doctor", "hospital", "regulator", "developer"].map((role) => (
-                  <div key={role} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                    <p className="text-sm font-semibold text-slate-900">{t(`mc_role_logic_${role}_title`)}</p>
-                    <p className="mt-2 text-xs leading-6 text-slate-500">{t(`mc_role_logic_${role}`)}</p>
-                  </div>
-                ))}
-              </div>
-              <p className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm leading-6 text-emerald-800">
-                {t("mc_role_logic_note")}
-              </p>
-            </section>
+            </div>
           </div>
         </div>
       </div>
@@ -1018,30 +1175,62 @@ function TraceDrawer({
   t: (key: string) => string;
   onClose: () => void;
 }) {
+  const auditEvents = "RECORD_HASH_ANCHORED → GRANT_ACCESS → ACCESS_LOGGED";
   const traceItems = [
     {
-      title: "AES-256 Encryption",
-      body: t("mc_trace_aes_desc")
+      title: t("mc_trace_aes_title"),
+      body: t("mc_trace_aes_desc"),
+      mono: false
     },
     {
-      title: "IPFS Off-chain Storage",
-      body: `${t("mc_trace_ipfs_desc")} ${t("mc_cid")}: ${record.ipfsCid}`
+      title: "IPFS CID",
+      body: record.ipfsCid,
+      mono: true
     },
     {
-      title: "Hyperledger Fabric",
-      body: `${t("mc_trace_fabric_desc")} ${t("channel")}: medical-record-channel · ${t("mc_block")}: #1027 · ${t("tx_hash")}: 0x944b5e28...`
+      title: t("mc_on_chain_hash"),
+      body: record.hash,
+      mono: true
     },
     {
-      title: "Smart Contract / Chaincode",
-      body: `${t("mc_trace_chaincode_desc")} ${t("mc_scope")}: ${t(record.scopeKey)} · ${t("mc_purpose")}: ${t(record.purposeKey)} · ${t("mc_expiry")}: ${t(record.expiryKey)} · ${t("mc_revocation")}: ${t("mc_revocation_anytime")}`
+      title: t("mc_trace_fabric_channel"),
+      body: "medical-record-channel",
+      mono: true
     },
     {
-      title: "DID Consent Signature",
-      body: `${t("mc_trace_did_desc")} did:medlink:patient:CN-2038-8841`
+      title: t("mc_trace_block_number"),
+      body: "#1027",
+      mono: true
     },
     {
-      title: "Audit Log",
-      body: `${t("mc_trace_audit_desc")} RECORD_HASH_ANCHORED · GRANT_ACCESS · ACCESS_LOGGED · REVOKE_ACCESS`
+      title: t("mc_trace_transaction_hash"),
+      body: "0x944b5e28c87f1f303143ff08d32b4f6507bb66d9d1af08e23ba1c8e4475f3109",
+      mono: true
+    },
+    {
+      title: t("mc_trace_chaincode_rule"),
+      body: t("mc_trace_chaincode_rule_value"),
+      mono: false
+    },
+    {
+      title: t("mc_trace_consent_scope"),
+      body: t(record.scopeKey),
+      mono: false
+    },
+    {
+      title: t("mc_trace_expiry"),
+      body: t(record.expiryKey),
+      mono: false
+    },
+    {
+      title: t("mc_trace_did_signature"),
+      body: "did:medlink:patient:CN-2038-8841",
+      mono: true
+    },
+    {
+      title: t("mc_trace_audit_events"),
+      body: auditEvents,
+      mono: true
     }
   ];
 
@@ -1050,11 +1239,11 @@ function TraceDrawer({
   "event": "GRANT_ACCESS",
   "patientDID": "did:medlink:patient:CN-2038-8841",
   "providerID": "westchina-cardiology-dr-li",
-  "recordHash": "${compactHash(record.hash)}",
+  "recordHash": "${record.hash}",
   "scope": ["${displayRecordType(record.type, showChinese, showKorean)}"],
   "purpose": "${t(record.purposeKey)}",
   "expiresIn": "72h",
-  "txHash": "0x944b5e28..."
+  "txHash": "0x944b5e28c87f1f303143ff08d32b4f6507bb66d9d1af08e23ba1c8e4475f3109"
 }`;
 
   return (
@@ -1088,7 +1277,7 @@ function TraceDrawer({
           {traceItems.map((item) => (
             <div key={item.title} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
               <h3 className="text-sm font-semibold text-slate-900">{item.title}</h3>
-              <p className="mt-2 text-sm leading-7 text-slate-600">{item.body}</p>
+              <p className={`mt-2 text-sm leading-7 text-slate-600 ${item.mono ? "break-all font-mono text-xs" : ""}`}>{item.body}</p>
             </div>
           ))}
         </div>
