@@ -18,36 +18,37 @@ import {
   X
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { AuthRole, AuthUser, authService } from "@/services/authService";
 
 const VERIFICATION_CODE = "123456";
 const AUTH_STORAGE_KEY = "medlink-auth-user";
 
-const securityBadges = [
-  "DID-ready",
-  "PIPL-aware",
-  "Smart Contract Access Control",
-  "No real medical data used"
+const securityBadgeKeys = [
+  "didReady",
+  "piplAware",
+  "smartContractAccessControl",
+  "noRealMedicalDataUsed"
 ];
 
 const modules = [
   {
     label: "MediChain",
-    detail: "Consent ledger",
+    detailKey: "medichainConsentLedger",
     icon: ShieldCheck,
     className: "left-1/2 top-3 -translate-x-1/2",
     color: "from-sky-400 to-blue-500"
   },
   {
     label: "MediRoute",
-    detail: "Referral logic",
+    detailKey: "medirouteReferralLogic",
     icon: Network,
     className: "bottom-4 left-4 md:left-10",
     color: "from-emerald-400 to-sky-500"
   },
   {
     label: "MediRx",
-    detail: "Prescription route",
+    detailKey: "medirxPrescriptionRoute",
     icon: FileCheck2,
     className: "bottom-4 right-4 md:right-10",
     color: "from-blue-300 to-sky-400"
@@ -61,6 +62,14 @@ const roleOptions = [
   "Pharmacy / Distributor",
   "Regulator"
 ];
+
+const roleOptionKeys: Record<string, string> = {
+  Patient: "rolePatient",
+  Doctor: "roleDoctor",
+  "Hospital Admin": "roleHospitalAdmin",
+  "Pharmacy / Distributor": "rolePharmacyDistributor",
+  Regulator: "roleRegulator"
+};
 
 const roleMap: Record<string, AuthRole> = {
   Patient: "research-observer",
@@ -104,6 +113,7 @@ function createPrototypeUser(input: {
 export default function LoginPage() {
   const router = useRouter();
   const { login } = useAuth();
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<TabMode>("login");
   const [toasts, setToasts] = useState<ToastState[]>([]);
   const [loginEmail, setLoginEmail] = useState("mira.wong@westchina.example");
@@ -153,8 +163,8 @@ export default function LoginPage() {
   const sendLoginCode = () => {
     if (!loginEmail.trim()) {
       showToast({
-        title: "Email required",
-        description: "Enter an email address before requesting a code.",
+        title: t("loginEmailRequiredToastTitle"),
+        description: t("loginEmailRequiredToastDescription"),
         tone: "error"
       });
       return;
@@ -162,8 +172,8 @@ export default function LoginPage() {
 
     setLoginCountdown(60);
     showToast({
-      title: "Demo verification code sent: 123456",
-      description: "Use this prototype code to continue.",
+      title: t("demoVerificationCodeSentToastTitle"),
+      description: t("demoVerificationCodeSentLoginToastDescription"),
       tone: "success"
     });
   };
@@ -171,8 +181,8 @@ export default function LoginPage() {
   const sendRegisterCode = () => {
     if (!registerEmail.trim()) {
       showToast({
-        title: "Email required",
-        description: "Enter an email address before requesting a code.",
+        title: t("loginEmailRequiredToastTitle"),
+        description: t("loginEmailRequiredToastDescription"),
         tone: "error"
       });
       return;
@@ -180,8 +190,8 @@ export default function LoginPage() {
 
     setRegisterCountdown(60);
     showToast({
-      title: "Demo verification code sent: 123456",
-      description: "Use this prototype code to create the account.",
+      title: t("demoVerificationCodeSentToastTitle"),
+      description: t("demoVerificationCodeSentRegisterToastDescription"),
       tone: "success"
     });
   };
@@ -189,8 +199,8 @@ export default function LoginPage() {
   const handleLogin = async () => {
     if (!loginEmail.trim()) {
       showToast({
-        title: "Email required",
-        description: "Enter your demo email address.",
+        title: t("loginEmailRequiredToastTitle"),
+        description: t("loginDemoEmailRequiredToastDescription"),
         tone: "error"
       });
       return;
@@ -198,8 +208,8 @@ export default function LoginPage() {
 
     if (loginCode !== VERIFICATION_CODE) {
       showToast({
-        title: "Invalid verification code",
-        description: "Use 123456 for this MedLink prototype.",
+        title: t("invalidVerificationCodeToastTitle"),
+        description: t("invalidVerificationCodeToastDescription"),
         tone: "error"
       });
       return;
@@ -228,8 +238,8 @@ export default function LoginPage() {
   const handleRegister = async () => {
     if (!registerName.trim() || !registerEmail.trim() || !registerRole) {
       showToast({
-        title: "Missing registration details",
-        description: "Complete name, email, and role before creating the account.",
+        title: t("missingRegistrationDetailsToastTitle"),
+        description: t("missingRegistrationDetailsToastDescription"),
         tone: "error"
       });
       return;
@@ -237,8 +247,8 @@ export default function LoginPage() {
 
     if (!registerConsent) {
       showToast({
-        title: "Consent required",
-        description: "Agree to the simulated privacy and prototype terms to continue.",
+        title: t("prototypeConsentRequiredToastTitle"),
+        description: t("prototypeConsentRequiredToastDescription"),
         tone: "error"
       });
       return;
@@ -246,8 +256,8 @@ export default function LoginPage() {
 
     if (registerCode !== VERIFICATION_CODE) {
       showToast({
-        title: "Invalid verification code",
-        description: "Use 123456 for this MedLink prototype.",
+        title: t("invalidVerificationCodeToastTitle"),
+        description: t("invalidVerificationCodeToastDescription"),
         tone: "error"
       });
       return;
@@ -280,13 +290,13 @@ export default function LoginPage() {
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-xs font-medium uppercase tracking-[0.24em] text-sky-700">
               <LockKeyhole className="h-3.5 w-3.5" />
-              Secure prototype access
+              {t("securePrototypeAccess")}
             </div>
             <h1 className="mt-6 max-w-2xl text-4xl font-semibold leading-tight text-slate-900">
-              Verify identity before coordinating care across the MedLink network.
+              {t("loginHeroTitle")}
             </h1>
             <p className="mt-5 max-w-xl text-sm leading-7 text-slate-600">
-              This demo uses simulated verification and local prototype sessions to show how consent, routing, and audit modules fit together.
+              {t("loginHeroSubtitle")}
             </p>
           </div>
 
@@ -333,7 +343,7 @@ export default function LoginPage() {
                   <User className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="text-xs uppercase tracking-[0.18em] text-sky-600">Identity node</p>
+                  <p className="text-xs uppercase tracking-[0.18em] text-sky-600">{t("identityNode")}</p>
                   <p className="mt-1 text-sm font-semibold text-slate-900">did:medlink:login</p>
                 </div>
               </div>
@@ -352,17 +362,17 @@ export default function LoginPage() {
                     <Icon className="h-5 w-5" />
                   </div>
                   <p className="text-sm font-semibold text-slate-900">{module.label}</p>
-                  <p className="mt-1 text-xs text-slate-500">{module.detail}</p>
+                  <p className="mt-1 text-xs text-slate-500">{t(module.detailKey)}</p>
                 </motion.div>
               );
             })}
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            {securityBadges.map((badge) => (
-              <div key={badge} className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm text-slate-700 ">
+            {securityBadgeKeys.map((badgeKey) => (
+              <div key={badgeKey} className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm text-slate-700 ">
                 <Check className="h-4 w-4 shrink-0 text-emerald-700" />
-                <span>{badge}</span>
+                <span>{t(badgeKey)}</span>
               </div>
             ))}
           </div>
@@ -378,9 +388,9 @@ export default function LoginPage() {
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-sky-500 text-white">
               <Sparkles className="h-5 w-5" />
             </div>
-            <h2 className="mt-5 text-2xl font-semibold text-slate-900">Access MedLink</h2>
+            <h2 className="mt-5 text-2xl font-semibold text-slate-900">{t("accessMedlink")}</h2>
             <p className="mt-2 text-sm leading-6 text-slate-500">
-              Enter the demo verification code to continue into the patient journey.
+              {t("accessMedlinkSubtitle")}
             </p>
           </div>
 
@@ -394,7 +404,7 @@ export default function LoginPage() {
                   activeTab === tab ? "bg-sky-500 text-white" : "text-slate-600 hover:bg-white hover:text-sky-600"
                 }`}
               >
-                {tab === "login" ? "Login" : "Register"}
+                {tab === "login" ? t("loginTab") : t("registerTab")}
               </button>
             ))}
           </div>
@@ -410,7 +420,7 @@ export default function LoginPage() {
                 className="grid gap-4"
               >
                 <label className="grid gap-2 text-sm font-medium text-slate-700">
-                  Email
+                  {t("email")}
                   <span className="relative">
                     <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
                     <input
@@ -418,7 +428,7 @@ export default function LoginPage() {
                       onChange={(event) => setLoginEmail(event.target.value)}
                       type="email"
                       className="h-12 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-400"
-                      placeholder="clinician@hospital.example"
+                      placeholder={t("demoEmailPlaceholder")}
                     />
                   </span>
                 </label>
@@ -429,17 +439,17 @@ export default function LoginPage() {
                   disabled={loginCountdown > 0}
                   className="glass-button h-12 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {loginCountdown > 0 ? `Resend in ${loginCountdown}s` : "Send Verification Code"}
+                  {loginCountdown > 0 ? t("resendInSeconds").replace("{seconds}", String(loginCountdown)) : t("sendVerificationCode")}
                 </button>
 
                 <label className="grid gap-2 text-sm font-medium text-slate-700">
-                  Verification code
+                  {t("verificationCode")}
                   <input
                     value={loginCode}
                     onChange={(event) => setLoginCode(event.target.value)}
                     inputMode="numeric"
                     className="h-12 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-400"
-                    placeholder="123456"
+                    placeholder={t("demoVerificationCodePlaceholder")}
                   />
                 </label>
 
@@ -450,7 +460,7 @@ export default function LoginPage() {
                   className="primary-button h-12 disabled:cursor-not-allowed disabled:opacity-70"
                 >
                   {loginLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                  Login
+                  {t("loginButton")}
                   {!loginLoading ? <ArrowRight className="h-4 w-4" /> : null}
                 </button>
 
@@ -460,7 +470,7 @@ export default function LoginPage() {
                   disabled={loginLoading}
                   className="glass-button h-12 disabled:cursor-not-allowed disabled:opacity-70"
                 >
-                  Continue as Demo Patient
+                  {t("continueAsDemoPatient")}
                 </button>
               </motion.div>
             ) : (
@@ -473,28 +483,28 @@ export default function LoginPage() {
                 className="grid gap-4"
               >
                 <label className="grid gap-2 text-sm font-medium text-slate-700">
-                  Full name
+                  {t("fullName")}
                   <input
                     value={registerName}
                     onChange={(event) => setRegisterName(event.target.value)}
                     className="h-12 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-400"
-                    placeholder="Avery Chen"
+                    placeholder={t("demoRegisterNamePlaceholder")}
                   />
                 </label>
 
                 <label className="grid gap-2 text-sm font-medium text-slate-700">
-                  Email
+                  {t("email")}
                   <input
                     value={registerEmail}
                     onChange={(event) => setRegisterEmail(event.target.value)}
                     type="email"
                     className="h-12 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-400"
-                    placeholder="name@example.edu"
+                    placeholder={t("demoRegisterEmailPlaceholder")}
                   />
                 </label>
 
                 <label className="grid gap-2 text-sm font-medium text-slate-700">
-                  Role
+                  {t("role")}
                   <span className="relative">
                     <select
                       value={registerRole}
@@ -503,7 +513,7 @@ export default function LoginPage() {
                     >
                       {roleOptions.map((role) => (
                         <option key={role} value={role} className="bg-white text-slate-900">
-                          {role}
+                          {t(roleOptionKeys[role])}
                         </option>
                       ))}
                     </select>
@@ -517,17 +527,17 @@ export default function LoginPage() {
                   disabled={registerCountdown > 0}
                   className="glass-button h-12 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {registerCountdown > 0 ? `Resend in ${registerCountdown}s` : "Send Verification Code"}
+                  {registerCountdown > 0 ? t("resendInSeconds").replace("{seconds}", String(registerCountdown)) : t("sendVerificationCode")}
                 </button>
 
                 <label className="grid gap-2 text-sm font-medium text-slate-700">
-                  Verification code
+                  {t("verificationCode")}
                   <input
                     value={registerCode}
                     onChange={(event) => setRegisterCode(event.target.value)}
                     inputMode="numeric"
                     className="h-12 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-400"
-                    placeholder="123456"
+                    placeholder={t("demoVerificationCodePlaceholder")}
                   />
                 </label>
 
@@ -538,7 +548,7 @@ export default function LoginPage() {
                     type="checkbox"
                     className="mt-1 h-4 w-4 rounded border-slate-300 bg-white accent-sky-500"
                   />
-                  <span>I agree to the simulated data privacy and prototype terms.</span>
+                  <span>{t("prototypeConsentText")}</span>
                 </label>
 
                 <button
@@ -548,7 +558,7 @@ export default function LoginPage() {
                   className="primary-button h-12 disabled:cursor-not-allowed disabled:opacity-70"
                 >
                   {registerLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                  Create Account
+                  {t("createAccount")}
                   {!registerLoading ? <ArrowRight className="h-4 w-4" /> : null}
                 </button>
               </motion.div>
